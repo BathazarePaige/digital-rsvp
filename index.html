@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Invitation — Anniversaire de Martine Simo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Lato:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #7a6330;
+    --bg: #0D0C0A;
+    --bg2: #13120F;
+    --cream: #F5EDDA;
+    --cream2: #D4C9B0;
+    --white: #FDFAF4;
+    --text: #E8DFC8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lato', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── ACCESS GATE ─────────────────────────── */
+  #gate {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 2rem;
+    padding: 2rem;
+    transition: opacity .8s ease, transform .8s ease;
+  }
+  #gate.hidden { opacity: 0; pointer-events: none; transform: scale(1.04); }
+
+  .gate-ornament {
+    width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto;
+  }
+  .gate-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    letter-spacing: .35em;
+    color: var(--gold);
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .gate-sub {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--cream2);
+    text-align: center;
+  }
+  .gate-input-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    width: 100%; max-width: 320px;
+  }
+  .gate-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gold-dim);
+    color: var(--white);
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    letter-spacing: .5em;
+    text-align: center;
+    padding: .6rem .5rem;
+    outline: none;
+    transition: border-color .3s;
+  }
+  .gate-input:focus { border-color: var(--gold); }
+  .gate-input::placeholder { color: var(--gold-dim); font-size: 1rem; letter-spacing: .2em; }
+  .gate-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: .75rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    padding: .75rem 2.5rem;
+    cursor: pointer;
+    transition: background .3s, color .3s;
+    margin-top: .5rem;
+  }
+  .gate-btn:hover { background: var(--gold); color: var(--bg); }
+  .gate-error {
+    color: #c77;
+    font-size: .85rem;
+    letter-spacing: .1em;
+    min-height: 1.2em;
+    text-align: center;
+  }
+
+  /* ── MAIN SITE ────────────────────────────── */
+  #site {
+    opacity: 0;
+    transition: opacity 1s ease .2s;
+    pointer-events: none;
+  }
+  #site.visible { opacity: 1; pointer-events: all; }
+
+  /* ── HERO ─────────────────────────────────── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 110%, rgba(201,168,76,.12) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 20% 20%, rgba(201,168,76,.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-intro {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: var(--gold);
+    letter-spacing: .2em;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp .9s ease .4s forwards;
+  }
+
+  .hero-divider {
+    display: flex; align-items: center; gap: 1rem;
+    width: min(400px, 80vw);
+    margin: 0 auto 1.5rem;
+    opacity: 0;
+    animation: fadeUp .9s ease .6s forwards;
+  }
+  .hero-divider span { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dim)); }
+  .hero-divider span:last-child { background: linear-gradient(90deg, var(--gold-dim), transparent); }
+  .hero-divider i { color: var(--gold); font-size: 1rem; font-style: normal; }
+
+  .hero-name {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2.8rem, 9vw, 6.5rem);
+    font-weight: 400;
+    color: var(--white);
+    line-height: 1.1;
+    letter-spacing: .05em;
+    opacity: 0;
+    animation: fadeUp 1s ease .8s forwards;
+  }
+  .hero-name span { color: var(--gold); }
+
+  .hero-age {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    color: var(--cream2);
+    margin-top: .5rem;
+    opacity: 0;
+    animation: fadeUp .9s ease 1s forwards;
+  }
+
+  .hero-date-block {
+    margin-top: 3rem;
+    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+    opacity: 0;
+    animation: fadeUp .9s ease 1.2s forwards;
+  }
+  .hero-date {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(.9rem, 2vw, 1.05rem);
+    letter-spacing: .3em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .hero-location {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 2.5vw, 1.15rem);
+    color: var(--cream2);
+    letter-spacing: .1em;
+  }
+
+  /* COUNTDOWN */
+  .countdown-wrap {
+    margin-top: 3.5rem;
+    display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center;
+    opacity: 0;
+    animation: fadeUp .9s ease 1.4s forwards;
+  }
+  .cd-item { display: flex; flex-direction: column; align-items: center; gap: .3rem; }
+  .cd-num {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .cd-label {
+    font-size: .65rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--cream2);
+  }
+  .cd-sep {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    color: var(--gold-dim);
+    align-self: center;
+    margin-bottom: .6rem;
+  }
+
+  .scroll-hint {
+    margin-top: 4rem;
+    opacity: 0;
+    animation: fadeUp .9s ease 1.8s forwards, bounce 2s ease 2.8s infinite;
+    color: var(--gold-dim);
+    font-size: .75rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+  }
+  .scroll-hint::after {
+    content: '↓';
+    font-size: 1.2rem;
+    color: var(--gold-dim);
+  }
+
+  /* ── SECTIONS ─────────────────────────────── */
+  section {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 5rem 2rem;
+    text-align: center;
+  }
+
+  .section-tag {
+    font-family: 'Cinzel', serif;
+    font-size: .7rem;
+    letter-spacing: .4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: var(--white);
+    margin-bottom: 1rem;
+  }
+  .section-line {
+    width: 60px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 1.5rem auto;
+  }
+  .section-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.05rem, 2.5vw, 1.2rem);
+    line-height: 1.9;
+    color: var(--cream2);
+  }
+
+  /* ── EVENT DETAILS ────────────────────────── */
+  .details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+  .detail-card {
+    border: 1px solid rgba(201,168,76,.2);
+    padding: 2rem 1.5rem;
+    display: flex; flex-direction: column; align-items: center; gap: .8rem;
+    transition: border-color .3s, transform .3s;
+  }
+  .detail-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+  .detail-icon { font-size: 1.5rem; }
+  .detail-label {
+    font-family: 'Cinzel', serif;
+    font-size: .65rem;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .detail-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--white);
+    line-height: 1.5;
+  }
+
+  /* ── DRESS CODE ───────────────────────────── */
+  .dress-pills {
+    display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+    margin-top: 2rem;
+  }
+  .pill {
+    border: 1px solid var(--gold-dim);
+    color: var(--cream2);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    padding: .5rem 1.5rem;
+    letter-spacing: .1em;
+    font-style: italic;
+  }
+
+  /* ── RSVP ─────────────────────────────────── */
+  #rsvp { background: var(--bg2); max-width: 100%; padding: 5rem 2rem; }
+  .rsvp-inner { max-width: 600px; margin: 0 auto; text-align: center; }
+
+  .rsvp-form {
+    display: flex; flex-direction: column; gap: 1.5rem;
+    margin-top: 2.5rem;
+    text-align: left;
+  }
+  .field { display: flex; flex-direction: column; gap: .5rem; }
+  .field label {
+    font-family: 'Cinzel', serif;
+    font-size: .65rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .field input, .field select, .field textarea {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gold-dim);
+    color: var(--white);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    padding: .6rem 0;
+    outline: none;
+    transition: border-color .3s;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold); }
+  .field select option { background: var(--bg); color: var(--white); }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  .rsvp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+  .submit-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: .75rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    padding: 1rem 3rem;
+    cursor: pointer;
+    transition: background .3s, color .3s;
+    align-self: center;
+    margin-top: .5rem;
+  }
+  .submit-btn:hover { background: var(--gold); color: var(--bg); }
+
+  .rsvp-success {
+    display: none;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.3rem;
+    color: var(--gold);
+    text-align: center;
+    padding: 2rem;
+    animation: fadeUp .7s ease forwards;
+  }
+
+  /* ── FOOTER ───────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid rgba(201,168,76,.15);
+  }
+  .footer-name {
+    font-family: 'Cinzel', serif;
+    font-size: .7rem;
+    letter-spacing: .4em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+  }
+  .footer-note {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: .9rem;
+    color: var(--gold-dim);
+    margin-top: .5rem;
+  }
+
+  /* ── ANIMATIONS ───────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(6px); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity .9s ease, transform .9s ease;
+  }
+  .reveal.in-view { opacity: 1; transform: none; }
+
+  @media (max-width: 500px) {
+    .rsvp-row { grid-template-columns: 1fr; }
+    .countdown-wrap { gap: 1.5rem; }
+    .cd-sep { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ ACCESS GATE ══════════════════════════════════════════════ -->
+<div id="gate">
+  <div class="gate-ornament"></div>
+  <div class="gate-title">Invitation Privée</div>
+  <div class="gate-sub">Veuillez entrer votre code d'accès</div>
+  <div class="gate-input-wrap">
+    <input id="codeInput" class="gate-input" type="password" maxlength="6"
+           placeholder="• • • •" autocomplete="off"
+           oninput="this.value=this.value.replace(/\D/g,'')"
+           onkeydown="if(event.key==='Enter')checkCode()"/>
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" onclick="checkCode()">Accéder</button>
+  </div>
+  <div class="gate-ornament"></div>
+</div>
+
+<!-- ══ MAIN SITE ═════════════════════════════════════════════════ -->
+<div id="site">
+
+  <!-- HERO -->
+  <div class="hero">
+    <p class="hero-intro">Vous êtes cordialement invité(e) à célébrer</p>
+    <div class="hero-divider"><span></span><i>✦</i><span></span></div>
+    <h1 class="hero-name">Martine<br/><span>Simo</span></h1>
+    <p class="hero-age">fête ses 30 ans</p>
+
+    <div class="hero-date-block">
+      <div class="hero-date">Samedi 14 Juin 2025</div>
+      <div class="hero-location">Hôtel Hilton — Yaoundé, Cameroun</div>
+    </div>
+
+    <div class="countdown-wrap" id="countdown">
+      <div class="cd-item"><div class="cd-num" id="cd-j">--</div><div class="cd-label">Jours</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-item"><div class="cd-num" id="cd-h">--</div><div class="cd-label">Heures</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-item"><div class="cd-num" id="cd-m">--</div><div class="cd-label">Minutes</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-item"><div class="cd-num" id="cd-s">--</div><div class="cd-label">Secondes</div></div>
+    </div>
+
+    <div class="scroll-hint">Défiler pour découvrir</div>
+  </div>
+
+  <!-- MESSAGE -->
+  <section class="reveal">
+    <div class="section-tag">Un mot de la fêtée</div>
+    <h2 class="section-title">Chère famille, chers amis</h2>
+    <div class="section-line"></div>
+    <p class="section-text">
+      Trente ans — un chiffre qui mérite d'être célébré entouré des personnes qui comptent
+      le plus. C'est avec tout l'amour de mon cœur que je vous convie à partager avec moi
+      cette soirée inoubliable, tissée de joie, de musique et de belles émotions.
+      <br/><br/>
+      Votre présence est le plus beau des cadeaux.
+    </p>
+  </section>
+
+  <!-- DETAILS -->
+  <section class="reveal">
+    <div class="section-tag">Informations pratiques</div>
+    <h2 class="section-title">Les détails de la soirée</h2>
+    <div class="section-line"></div>
+    <div class="details-grid">
+      <div class="detail-card">
+        <div class="detail-icon">🗓</div>
+        <div class="detail-label">Date</div>
+        <div class="detail-value">Samedi 14 Juin 2025</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-icon">🕖</div>
+        <div class="detail-label">Heure</div>
+        <div class="detail-value">19 h 00 — 02 h 00</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-icon">📍</div>
+        <div class="detail-label">Lieu</div>
+        <div class="detail-value">Hôtel Hilton<br/>Yaoundé</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-icon">🥂</div>
+        <div class="detail-label">Programme</div>
+        <div class="detail-value">Cocktail · Dîner<br/>Musique Live · Danse</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DRESS CODE -->
+  <section class="reveal">
+    <div class="section-tag">Dress Code</div>
+    <h2 class="section-title">Élégance de rigueur</h2>
+    <div class="section-line"></div>
+    <p class="section-text">
+      Adoptez les couleurs de la soirée pour une atmosphère encore plus mémorable.
+    </p>
+    <div class="dress-pills">
+      <div class="pill">Or & Champagne</div>
+      <div class="pill">Noir Élégant</div>
+      <div class="pill">Blanc Ivoire</div>
+      <div class="pill">Tenue de soirée</div>
+    </div>
+  </section>
+
+  <!-- NOTE -->
+  <section class="reveal">
+    <div class="section-tag">Important</div>
+    <h2 class="section-title">À noter</h2>
+    <div class="section-line"></div>
+    <p class="section-text">
+      Cette invitation est strictement personnelle. <br/>
+      Merci de ne pas la partager. <br/><br/>
+      La soirée est réservée aux invités âgés de <strong>18 ans et plus</strong>.<br/>
+      Merci de confirmer votre présence avant le <strong>1er Juin 2025</strong>.
+    </p>
+  </section>
+
+  <!-- RSVP -->
+  <div id="rsvp">
+    <div class="rsvp-inner reveal">
+      <div class="section-tag">Répondez à l'invitation</div>
+      <h2 class="section-title">Confirmer votre présence</h2>
+      <div class="section-line"></div>
+
+      <form class="rsvp-form" id="rsvpForm" onsubmit="submitRsvp(event)">
+        <div class="rsvp-row">
+          <div class="field">
+            <label>Prénom</label>
+            <input type="text" placeholder="Votre prénom" required/>
+          </div>
+          <div class="field">
+            <label>Nom</label>
+            <input type="text" placeholder="Votre nom" required/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Téléphone / WhatsApp</label>
+          <input type="tel" placeholder="+237 6XX XXX XXX" required/>
+        </div>
+        <div class="field">
+          <label>Confirmation</label>
+          <select required>
+            <option value="" disabled selected>— Je confirme —</option>
+            <option value="yes">✅ Oui, je serai présent(e)</option>
+            <option value="no">❌ Je ne pourrai pas venir</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Message pour la fêtée (optionnel)</label>
+          <textarea placeholder="Un mot doux…"></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Envoyer ma réponse</button>
+      </form>
+      <div class="rsvp-success" id="rsvpSuccess">
+        ✦ Merci ! Votre réponse a bien été enregistrée. À très bientôt ! ✦
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-name">Martine Simo · 30 ans · 14 Juin 2025</div>
+    <div class="footer-note">Ne pas partager cette invitation</div>
+  </footer>
+
+</div><!-- #site -->
+
+<script>
+  /* ── ACCESS CODE ──────────────────────────── */
+  const ACCESS_CODE = '1234'; // ← Modifier ici
+
+  function checkCode() {
+    const val = document.getElementById('codeInput').value.trim();
+    if (val === ACCESS_CODE) {
+      document.getElementById('gate').classList.add('hidden');
+      const site = document.getElementById('site');
+      site.classList.add('visible');
+      startCountdown();
+      initReveal();
+    } else {
+      const err = document.getElementById('gateError');
+      err.textContent = 'Code incorrect. Veuillez réessayer.';
+      document.getElementById('codeInput').value = '';
+      setTimeout(() => err.textContent = '', 3000);
+    }
+  }
+
+  /* ── COUNTDOWN ────────────────────────────── */
+  function startCountdown() {
+    const target = new Date('2025-06-14T19:00:00');
+    function update() {
+      const now = new Date();
+      const diff = target - now;
+      if (diff <= 0) {
+        document.getElementById('countdown').innerHTML =
+          '<div style="font-family:Cinzel,serif;color:var(--gold);letter-spacing:.2em">Ce soir, c\'est la fête de Martine ! 🎉</div>';
+        return;
+      }
+      const j = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000)  / 60000);
+      const s = Math.floor((diff % 60000)    / 1000);
+      document.getElementById('cd-j').textContent = String(j).padStart(2,'0');
+      document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+      document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+      document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+    }
+    update(); setInterval(update, 1000);
+  }
+
+  /* ── SCROLL REVEAL ────────────────────────── */
+  function initReveal() {
+    const els = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in-view'); obs.unobserve(e.target); } });
+    }, { threshold: .15 });
+    els.forEach(el => obs.observe(el));
+  }
+
+  /* ── RSVP SUBMIT ──────────────────────────── */
+  function submitRsvp(e) {
+    e.preventDefault();
+    document.getElementById('rsvpForm').style.display = 'none';
+    document.getElementById('rsvpSuccess').style.display = 'block';
+  }
+</script>
+</body>
+</html>
